@@ -1,6 +1,6 @@
 <?php
 /**
- * Registers the ability category every AgentWarden ability belongs to.
+ * Registers the ability category every Tillkeeper ability belongs to.
  * Categories must be registered before any ability references them, on the
  * dedicated `wp_abilities_api_categories_init` hook (core Abilities API,
  * WP 6.9+) - a separate hook from ability registration itself.
@@ -10,13 +10,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-function agwd_register_ability_category() {
+function tlkp_register_ability_category() {
 	wp_register_ability_category(
-		AGWD_ABILITY_NAMESPACE,
+		TLKP_ABILITY_NAMESPACE,
 		array(
-			'label'       => __( 'AgentWarden', 'agentwarden' ),
-			'description' => __( 'Safe, audited read access to WooCommerce store data for AI agents.', 'agentwarden' ),
+			'label'       => __( 'Tillkeeper', 'tillkeeper' ),
+			'description' => __( 'Safe, audited read access to WooCommerce store data for AI agents.', 'tillkeeper' ),
 		)
 	);
 }
-add_action( 'wp_abilities_api_categories_init', 'agwd_register_ability_category' );
+add_action( 'wp_abilities_api_categories_init', 'tlkp_register_ability_category' );

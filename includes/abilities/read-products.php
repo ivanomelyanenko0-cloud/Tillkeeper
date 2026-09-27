@@ -1,7 +1,7 @@
 <?php
 /**
- * Read-only product abilities: `agentwarden/list-products` and
- * `agentwarden/get-product` - store data an agent can safely look at,
+ * Read-only product abilities: `tillkeeper/list-products` and
+ * `tillkeeper/get-product` - store data an agent can safely look at,
  * gated behind the same capability a shop manager needs in wp-admin.
  *
  * Deliberately excludes anything resembling a write path (no `set_*` calls
@@ -16,10 +16,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Same read gate for both abilities: whoever can edit products in wp-admin
  * can have an agent read them. An agent acts as an authenticated WP user
- * (e.g. an Application Password on a Shop Manager account) - AgentWarden
+ * (e.g. an Application Password on a Shop Manager account) - Tillkeeper
  * never exposes store data to anonymous or unauthenticated requests.
  */
-function agwd_can_read_products( $input = null ) {
+function tlkp_can_read_products( $input = null ) {
 	return current_user_can( 'edit_products' );
 }
 
@@ -27,7 +27,7 @@ function agwd_can_read_products( $input = null ) {
  * @param WC_Product $product
  * @return array
  */
-function agwd_format_product_summary( $product ) {
+function tlkp_format_product_summary( $product ) {
 	return array(
 		'id'             => $product->get_id(),
 		'name'           => $product->get_name(),
@@ -43,7 +43,7 @@ function agwd_format_product_summary( $product ) {
 	);
 }
 
-function agwd_ability_list_products( $input ) {
+function tlkp_ability_list_products( $input ) {
 	$input = is_array( $input ) ? $input : array();
 
 	$args = array(
@@ -60,9 +60,9 @@ function agwd_ability_list_products( $input ) {
 
 	$result = wc_get_products( $args );
 
-	$products = array_map( 'agwd_format_product_summary', $result->products );
+	$products = array_map( 'tlkp_format_product_summary', $result->products );
 
-	agwd_audit_log_record( AGWD_ABILITY_NAMESPACE . '/list-products', 'product', 0, count( $products ), true );
+	tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/list-products', 'product', 0, count( $products ), true );
 
 	return array(
 		'products' => $products,
@@ -71,51 +71,51 @@ function agwd_ability_list_products( $input ) {
 	);
 }
 
-function agwd_ability_get_product( $input ) {
+function tlkp_ability_get_product( $input ) {
 	$product_id = isset( $input['product_id'] ) ? (int) $input['product_id'] : 0;
 	$product    = $product_id ? wc_get_product( $product_id ) : false;
 
 	if ( ! $product ) {
-		agwd_audit_log_record( AGWD_ABILITY_NAMESPACE . '/get-product', 'product', $product_id, 0, false );
+		tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/get-product', 'product', $product_id, 0, false );
 
 		return new WP_Error(
-			'agwd_product_not_found',
-			__( 'No product exists with that ID.', 'agentwarden' ),
+			'tlkp_product_not_found',
+			__( 'No product exists with that ID.', 'tillkeeper' ),
 			array( 'status' => 404 )
 		);
 	}
 
-	agwd_audit_log_record( AGWD_ABILITY_NAMESPACE . '/get-product', 'product', $product_id, 1, true );
+	tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/get-product', 'product', $product_id, 1, true );
 
-	return agwd_format_product_summary( $product );
+	return tlkp_format_product_summary( $product );
 }
 
-function agwd_register_product_abilities() {
+function tlkp_register_product_abilities() {
 	wp_register_ability(
-		AGWD_ABILITY_NAMESPACE . '/list-products',
+		TLKP_ABILITY_NAMESPACE . '/list-products',
 		array(
-			'label'               => __( 'List products', 'agentwarden' ),
-			'description'         => __( 'Lists published WooCommerce products with price and stock, optionally filtered by a search term.', 'agentwarden' ),
-			'category'            => AGWD_ABILITY_NAMESPACE,
-			'execute_callback'    => 'agwd_ability_list_products',
-			'permission_callback' => 'agwd_can_read_products',
+			'label'               => __( 'List products', 'tillkeeper' ),
+			'description'         => __( 'Lists published WooCommerce products with price and stock, optionally filtered by a search term.', 'tillkeeper' ),
+			'category'            => TLKP_ABILITY_NAMESPACE,
+			'execute_callback'    => 'tlkp_ability_list_products',
+			'permission_callback' => 'tlkp_can_read_products',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'properties' => array(
 					'search'   => array(
 						'type'        => 'string',
-						'description' => __( 'Optional search term matched against the product title.', 'agentwarden' ),
+						'description' => __( 'Optional search term matched against the product title.', 'tillkeeper' ),
 					),
 					'per_page' => array(
 						'type'        => 'integer',
 						'minimum'     => 1,
 						'maximum'     => 100,
-						'description' => __( 'Results per page, capped at 100.', 'agentwarden' ),
+						'description' => __( 'Results per page, capped at 100.', 'tillkeeper' ),
 					),
 					'page'     => array(
 						'type'        => 'integer',
 						'minimum'     => 1,
-						'description' => __( 'Page number, starting at 1.', 'agentwarden' ),
+						'description' => __( 'Page number, starting at 1.', 'tillkeeper' ),
 					),
 				),
 			),
@@ -139,19 +139,19 @@ function agwd_register_product_abilities() {
 	);
 
 	wp_register_ability(
-		AGWD_ABILITY_NAMESPACE . '/get-product',
+		TLKP_ABILITY_NAMESPACE . '/get-product',
 		array(
-			'label'               => __( 'Get product', 'agentwarden' ),
-			'description'         => __( 'Fetches one WooCommerce product by ID, with price and stock.', 'agentwarden' ),
-			'category'            => AGWD_ABILITY_NAMESPACE,
-			'execute_callback'    => 'agwd_ability_get_product',
-			'permission_callback' => 'agwd_can_read_products',
+			'label'               => __( 'Get product', 'tillkeeper' ),
+			'description'         => __( 'Fetches one WooCommerce product by ID, with price and stock.', 'tillkeeper' ),
+			'category'            => TLKP_ABILITY_NAMESPACE,
+			'execute_callback'    => 'tlkp_ability_get_product',
+			'permission_callback' => 'tlkp_can_read_products',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'properties' => array(
 					'product_id' => array(
 						'type'        => 'integer',
-						'description' => __( 'The product ID to look up.', 'agentwarden' ),
+						'description' => __( 'The product ID to look up.', 'tillkeeper' ),
 					),
 				),
 				'required'   => array( 'product_id' ),
@@ -167,4 +167,4 @@ function agwd_register_product_abilities() {
 		)
 	);
 }
-add_action( 'wp_abilities_api_init', 'agwd_register_product_abilities' );
+add_action( 'wp_abilities_api_init', 'tlkp_register_product_abilities' );

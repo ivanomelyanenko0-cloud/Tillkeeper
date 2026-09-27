@@ -1,7 +1,7 @@
 <?php
 /**
- * Read-only customer abilities: `agentwarden/list-customers` and
- * `agentwarden/get-customer`. Deliberately left out of the first skeleton
+ * Read-only customer abilities: `tillkeeper/list-customers` and
+ * `tillkeeper/get-customer`. Deliberately left out of the first skeleton
  * pass pending a PII decision.
  *
  * Unlike products/orders, WooCommerce does not register a native customer
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * the WP capability for reading user accounts rather than a WooCommerce one.
  * `shop_manager` has `list_users` by default alongside `manage_woocommerce`.
  */
-function agwd_can_read_customers( $input = null ) {
+function tlkp_can_read_customers( $input = null ) {
 	return current_user_can( 'list_users' );
 }
 
@@ -32,7 +32,7 @@ function agwd_can_read_customers( $input = null ) {
  * @param WC_Customer $customer
  * @return array
  */
-function agwd_format_customer_summary( $customer ) {
+function tlkp_format_customer_summary( $customer ) {
 	return array(
 		'id'                 => $customer->get_id(),
 		'email'              => $customer->get_email(),
@@ -46,7 +46,7 @@ function agwd_format_customer_summary( $customer ) {
 	);
 }
 
-function agwd_ability_list_customers( $input ) {
+function tlkp_ability_list_customers( $input ) {
 	$input = is_array( $input ) ? $input : array();
 
 	$args = array(
@@ -64,12 +64,12 @@ function agwd_ability_list_customers( $input ) {
 	$user_query = new WP_User_Query( $args );
 	$customers  = array_map(
 		function ( $user ) {
-			return agwd_format_customer_summary( new WC_Customer( $user->ID ) );
+			return tlkp_format_customer_summary( new WC_Customer( $user->ID ) );
 		},
 		$user_query->get_results()
 	);
 
-	agwd_audit_log_record( AGWD_ABILITY_NAMESPACE . '/list-customers', 'customer', 0, count( $customers ), true );
+	tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/list-customers', 'customer', 0, count( $customers ), true );
 
 	return array(
 		'customers' => $customers,
@@ -78,42 +78,42 @@ function agwd_ability_list_customers( $input ) {
 	);
 }
 
-function agwd_ability_get_customer( $input ) {
+function tlkp_ability_get_customer( $input ) {
 	$customer_id = isset( $input['customer_id'] ) ? (int) $input['customer_id'] : 0;
 	$user        = $customer_id ? get_userdata( $customer_id ) : false;
 
 	if ( ! $user ) {
-		agwd_audit_log_record( AGWD_ABILITY_NAMESPACE . '/get-customer', 'customer', $customer_id, 0, false );
+		tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/get-customer', 'customer', $customer_id, 0, false );
 
 		return new WP_Error(
-			'agwd_customer_not_found',
-			__( 'No customer exists with that ID.', 'agentwarden' ),
+			'tlkp_customer_not_found',
+			__( 'No customer exists with that ID.', 'tillkeeper' ),
 			array( 'status' => 404 )
 		);
 	}
 
-	$summary = agwd_format_customer_summary( new WC_Customer( $customer_id ) );
+	$summary = tlkp_format_customer_summary( new WC_Customer( $customer_id ) );
 
-	agwd_audit_log_record( AGWD_ABILITY_NAMESPACE . '/get-customer', 'customer', $customer_id, 1, true );
+	tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/get-customer', 'customer', $customer_id, 1, true );
 
 	return $summary;
 }
 
-function agwd_register_customer_abilities() {
+function tlkp_register_customer_abilities() {
 	wp_register_ability(
-		AGWD_ABILITY_NAMESPACE . '/list-customers',
+		TLKP_ABILITY_NAMESPACE . '/list-customers',
 		array(
-			'label'               => __( 'List customers', 'agentwarden' ),
-			'description'         => __( 'Lists WooCommerce customer accounts with contact details and lifetime order stats, optionally filtered by a search term.', 'agentwarden' ),
-			'category'            => AGWD_ABILITY_NAMESPACE,
-			'execute_callback'    => 'agwd_ability_list_customers',
-			'permission_callback' => 'agwd_can_read_customers',
+			'label'               => __( 'List customers', 'tillkeeper' ),
+			'description'         => __( 'Lists WooCommerce customer accounts with contact details and lifetime order stats, optionally filtered by a search term.', 'tillkeeper' ),
+			'category'            => TLKP_ABILITY_NAMESPACE,
+			'execute_callback'    => 'tlkp_ability_list_customers',
+			'permission_callback' => 'tlkp_can_read_customers',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'properties' => array(
 					'search'   => array(
 						'type'        => 'string',
-						'description' => __( 'Optional search term matched against username, email or display name.', 'agentwarden' ),
+						'description' => __( 'Optional search term matched against username, email or display name.', 'tillkeeper' ),
 					),
 					'per_page' => array(
 						'type'    => 'integer',
@@ -146,19 +146,19 @@ function agwd_register_customer_abilities() {
 	);
 
 	wp_register_ability(
-		AGWD_ABILITY_NAMESPACE . '/get-customer',
+		TLKP_ABILITY_NAMESPACE . '/get-customer',
 		array(
-			'label'               => __( 'Get customer', 'agentwarden' ),
-			'description'         => __( 'Fetches one customer account by ID, with contact details and lifetime order stats.', 'agentwarden' ),
-			'category'            => AGWD_ABILITY_NAMESPACE,
-			'execute_callback'    => 'agwd_ability_get_customer',
-			'permission_callback' => 'agwd_can_read_customers',
+			'label'               => __( 'Get customer', 'tillkeeper' ),
+			'description'         => __( 'Fetches one customer account by ID, with contact details and lifetime order stats.', 'tillkeeper' ),
+			'category'            => TLKP_ABILITY_NAMESPACE,
+			'execute_callback'    => 'tlkp_ability_get_customer',
+			'permission_callback' => 'tlkp_can_read_customers',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'properties' => array(
 					'customer_id' => array(
 						'type'        => 'integer',
-						'description' => __( 'The customer\'s user ID.', 'agentwarden' ),
+						'description' => __( 'The customer\'s user ID.', 'tillkeeper' ),
 					),
 				),
 				'required'   => array( 'customer_id' ),
@@ -174,4 +174,4 @@ function agwd_register_customer_abilities() {
 		)
 	);
 }
-add_action( 'wp_abilities_api_init', 'agwd_register_customer_abilities' );
+add_action( 'wp_abilities_api_init', 'tlkp_register_customer_abilities' );

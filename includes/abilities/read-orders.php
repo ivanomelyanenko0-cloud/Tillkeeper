@@ -1,7 +1,7 @@
 <?php
 /**
- * Read-only order abilities: `agentwarden/list-orders` and
- * `agentwarden/get-order`. HPOS-safe (uses `wc_get_orders()`/`wc_get_order()`,
+ * Read-only order abilities: `tillkeeper/list-orders` and
+ * `tillkeeper/get-order`. HPOS-safe (uses `wc_get_orders()`/`wc_get_order()`,
  * never queries the `shop_order` post type directly, per WooCommerce's
  * High-Performance Order Storage).
  *
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-function agwd_can_read_orders( $input = null ) {
+function tlkp_can_read_orders( $input = null ) {
 	return current_user_can( 'edit_shop_orders' );
 }
 
@@ -26,7 +26,7 @@ function agwd_can_read_orders( $input = null ) {
  * @param WC_Order $order
  * @return array
  */
-function agwd_format_order_summary( $order ) {
+function tlkp_format_order_summary( $order ) {
 	return array(
 		'id'          => $order->get_id(),
 		'status'      => $order->get_status(),
@@ -38,7 +38,7 @@ function agwd_format_order_summary( $order ) {
 	);
 }
 
-function agwd_ability_list_orders( $input ) {
+function tlkp_ability_list_orders( $input ) {
 	$input = is_array( $input ) ? $input : array();
 
 	$args = array(
@@ -52,9 +52,9 @@ function agwd_ability_list_orders( $input ) {
 		$args['status'] = sanitize_key( $input['status'] );
 	}
 
-	$orders = array_map( 'agwd_format_order_summary', wc_get_orders( $args ) );
+	$orders = array_map( 'tlkp_format_order_summary', wc_get_orders( $args ) );
 
-	agwd_audit_log_record( AGWD_ABILITY_NAMESPACE . '/list-orders', 'order', 0, count( $orders ), true );
+	tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/list-orders', 'order', 0, count( $orders ), true );
 
 	return array(
 		'orders' => $orders,
@@ -62,21 +62,21 @@ function agwd_ability_list_orders( $input ) {
 	);
 }
 
-function agwd_ability_get_order( $input ) {
+function tlkp_ability_get_order( $input ) {
 	$order_id = isset( $input['order_id'] ) ? (int) $input['order_id'] : 0;
 	$order    = $order_id ? wc_get_order( $order_id ) : false;
 
 	if ( ! $order ) {
-		agwd_audit_log_record( AGWD_ABILITY_NAMESPACE . '/get-order', 'order', $order_id, 0, false );
+		tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/get-order', 'order', $order_id, 0, false );
 
 		return new WP_Error(
-			'agwd_order_not_found',
-			__( 'No order exists with that ID.', 'agentwarden' ),
+			'tlkp_order_not_found',
+			__( 'No order exists with that ID.', 'tillkeeper' ),
 			array( 'status' => 404 )
 		);
 	}
 
-	$summary          = agwd_format_order_summary( $order );
+	$summary          = tlkp_format_order_summary( $order );
 	$summary['items'] = array();
 	foreach ( $order->get_items() as $item ) {
 		$summary['items'][] = array(
@@ -88,26 +88,26 @@ function agwd_ability_get_order( $input ) {
 		);
 	}
 
-	agwd_audit_log_record( AGWD_ABILITY_NAMESPACE . '/get-order', 'order', $order_id, 1, true );
+	tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/get-order', 'order', $order_id, 1, true );
 
 	return $summary;
 }
 
-function agwd_register_order_abilities() {
+function tlkp_register_order_abilities() {
 	wp_register_ability(
-		AGWD_ABILITY_NAMESPACE . '/list-orders',
+		TLKP_ABILITY_NAMESPACE . '/list-orders',
 		array(
-			'label'               => __( 'List orders', 'agentwarden' ),
-			'description'         => __( 'Lists WooCommerce orders (status, total, item count) without customer personal data, optionally filtered by status.', 'agentwarden' ),
-			'category'            => AGWD_ABILITY_NAMESPACE,
-			'execute_callback'    => 'agwd_ability_list_orders',
-			'permission_callback' => 'agwd_can_read_orders',
+			'label'               => __( 'List orders', 'tillkeeper' ),
+			'description'         => __( 'Lists WooCommerce orders (status, total, item count) without customer personal data, optionally filtered by status.', 'tillkeeper' ),
+			'category'            => TLKP_ABILITY_NAMESPACE,
+			'execute_callback'    => 'tlkp_ability_list_orders',
+			'permission_callback' => 'tlkp_can_read_orders',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'properties' => array(
 					'status'   => array(
 						'type'        => 'string',
-						'description' => __( 'Optional order status to filter by, e.g. "processing" or "completed".', 'agentwarden' ),
+						'description' => __( 'Optional order status to filter by, e.g. "processing" or "completed".', 'tillkeeper' ),
 					),
 					'per_page' => array(
 						'type'    => 'integer',
@@ -132,19 +132,19 @@ function agwd_register_order_abilities() {
 	);
 
 	wp_register_ability(
-		AGWD_ABILITY_NAMESPACE . '/get-order',
+		TLKP_ABILITY_NAMESPACE . '/get-order',
 		array(
-			'label'               => __( 'Get order', 'agentwarden' ),
-			'description'         => __( 'Fetches one WooCommerce order by ID, with its line items, but no customer personal data.', 'agentwarden' ),
-			'category'            => AGWD_ABILITY_NAMESPACE,
-			'execute_callback'    => 'agwd_ability_get_order',
-			'permission_callback' => 'agwd_can_read_orders',
+			'label'               => __( 'Get order', 'tillkeeper' ),
+			'description'         => __( 'Fetches one WooCommerce order by ID, with its line items, but no customer personal data.', 'tillkeeper' ),
+			'category'            => TLKP_ABILITY_NAMESPACE,
+			'execute_callback'    => 'tlkp_ability_get_order',
+			'permission_callback' => 'tlkp_can_read_orders',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'properties' => array(
 					'order_id' => array(
 						'type'        => 'integer',
-						'description' => __( 'The order ID to look up.', 'agentwarden' ),
+						'description' => __( 'The order ID to look up.', 'tillkeeper' ),
 					),
 				),
 				'required'   => array( 'order_id' ),
@@ -160,4 +160,4 @@ function agwd_register_order_abilities() {
 		)
 	);
 }
-add_action( 'wp_abilities_api_init', 'agwd_register_order_abilities' );
+add_action( 'wp_abilities_api_init', 'tlkp_register_order_abilities' );
