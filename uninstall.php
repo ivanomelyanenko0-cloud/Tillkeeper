@@ -2,9 +2,10 @@
 /**
  * Uninstall handler.
  *
- * The audit log is Tillkeeper's own operational data (what agents read),
- * not merchant content, so it is always removed - there is no store data to
- * decide about yet in this skeleton (no settings, no options beyond the log).
+ * Settings, the activity log and the approval queue are Tillkeeper's own
+ * operational data, not store content, so they are always removed.
+ *
+ * @package Tillkeeper
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
@@ -12,7 +13,10 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 function tlkp_uninstall_site() {
-	delete_option( 'tlkp_audit_log' );
+	delete_option( 'tlkp_settings' );
+	delete_option( 'tlkp_activity_log' );
+	delete_option( 'tlkp_approval_queue' );
+	delete_option( 'tlkp_audit_log' ); // Left by pre-release builds.
 }
 
 if ( is_multisite() ) {

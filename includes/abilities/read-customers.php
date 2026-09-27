@@ -11,8 +11,7 @@
  * PII policy: a customer's name/email is the entire point of this ability
  * (an agent asking "who is customer #42" needs an answer), so the ability's
  * *output* includes it - same as WooCommerce's own REST API would. The
- * *audit log* never does: only the customer's numeric ID is recorded,
- * exactly like the orders log.
+ * activity log never does: only the customer's numeric ID is recorded.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -69,8 +68,6 @@ function tlkp_ability_list_customers( $input ) {
 		$user_query->get_results()
 	);
 
-	tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/list-customers', 'customer', 0, count( $customers ), true );
-
 	return array(
 		'customers' => $customers,
 		'total'     => (int) $user_query->get_total(),
@@ -83,8 +80,6 @@ function tlkp_ability_get_customer( $input ) {
 	$user        = $customer_id ? get_userdata( $customer_id ) : false;
 
 	if ( ! $user ) {
-		tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/get-customer', 'customer', $customer_id, 0, false );
-
 		return new WP_Error(
 			'tlkp_customer_not_found',
 			__( 'No customer exists with that ID.', 'tillkeeper' ),
@@ -93,8 +88,6 @@ function tlkp_ability_get_customer( $input ) {
 	}
 
 	$summary = tlkp_format_customer_summary( new WC_Customer( $customer_id ) );
-
-	tlkp_audit_log_record( TLKP_ABILITY_NAMESPACE . '/get-customer', 'customer', $customer_id, 1, true );
 
 	return $summary;
 }

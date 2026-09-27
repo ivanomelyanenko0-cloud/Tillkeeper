@@ -1,6 +1,6 @@
 === Tillkeeper ===
 Contributors: lukystile
-Tags: ai, mcp, abilities api, woocommerce, agent
+Tags: ai, mcp, abilities api, woocommerce, security
 Requires at least: 6.9
 Tested up to: 7.1
 Stable tag: 1.0.0
@@ -8,44 +8,69 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-A trust layer between AI agents and your WooCommerce store: safe, audited read access via the WordPress Abilities API.
+Keeps AI agents in check in your WooCommerce store: every agent action is logged, and deleting products or finalising orders waits for your approval.
 
 == Description ==
 
-**Tillkeeper** registers a set of read-only [WordPress Abilities API](https://developer.wordpress.org/plugins/abilities-api/) abilities that let an AI agent (ChatGPT, Claude, or any MCP-compatible client) look up your WooCommerce products and orders — safely, and with every read logged.
+AI agents such as ChatGPT, Claude or your own bots can now work with a WooCommerce store directly, through the WordPress Abilities API and MCP. WooCommerce itself registers abilities that let an agent **delete products** and **change order statuses** - and they run immediately, with no confirmation.
 
-* **Products** — list and look up products, including price and stock.
-* **Orders** — list and look up orders and their line items, without exposing customer personal data.
-* **Customers** — list and look up customer accounts (no WooCommerce core ability covers this today).
-* **Audit log** — every ability call is recorded (what was read, when, by whom), visible from the Tillkeeper admin page. IDs only, never names, emails, or addresses - even for the Customers abilities.
+Tillkeeper sits between the agent and your store:
 
-Everything an agent can do here is *read-only*. Letting an agent safely *change* your store — prices, discounts, refunds, order status — is a separate, deliberately harder problem: dry-run previews, limits, anomaly detection, and rollback. That's the planned scope of Tillkeeper Pro, not yet built.
+* **Approval for dangerous actions.** When an agent tries to delete a product or move an order to Completed, Cancelled or Refunded, nothing happens. The request waits on the Tillkeeper page until a store manager clicks Approve or Reject. The agent gets "pending approval" back and has no way to approve it itself - so even a confused or manipulated agent cannot do damage on its own.
+* **A log of everything agents do.** Every call to a WooCommerce ability - reads and changes - is recorded: which ability, which product or order, which user, and what happened. The log stores IDs only, never customer names, emails or addresses.
+* **A clear picture of what agents can do.** The Tillkeeper page lists every store ability available to agents, which ones change data, and which ones are protected.
+* **Your choice of strictness.** Require approval for every order status change, only for final statuses, or not at all; turn product deletion protection on or off.
+* **Works with any agent.** Tillkeeper protects WooCommerce's own standard abilities, so any agent or MCP client that calls them is covered without learning anything new.
 
-This is an early, evolving plugin — the name itself may still change before a public release.
+Tillkeeper also adds two read abilities WooCommerce does not have yet: `tillkeeper/list-customers` and `tillkeeper/get-customer`, available only to users who can list site users.
+
+= Tillkeeper Pro =
+
+[Tillkeeper Pro](https://cognitolab.net/products/tillkeeper) goes deeper on the same protection: a preview of every change before it is applied, limits for discounts and stock changes (anything over them goes to the approval queue), protection for product edits, an hourly limit on agent changes, a before/after history, and one-click rollback for price and stock changes.
 
 == External services ==
 
-This plugin does not connect to any external service. No data leaves your site. It only registers abilities that other software already running on your site (an MCP server, the REST API, or a compatible AI-agent integration) may call.
+This plugin does not connect to any external service. No data leaves your site. It only watches and guards abilities that software already running on your site (an MCP server, the REST API or an AI-agent integration) may call.
 
 == Installation ==
 
-1. Upload the `tillkeeper` folder to `/wp-content/plugins/`.
-2. Activate the plugin through the **Plugins** screen. WooCommerce must be installed and active.
-3. Open **Tillkeeper** in the admin menu to see the registered abilities and recent activity.
+1. Upload the `tillkeeper` folder to `/wp-content/plugins/`, or install it from the Plugins screen.
+2. Activate it. WooCommerce must be active, on WordPress 6.9 or later. The guard covers the abilities WooCommerce registers for agents (tested with WooCommerce 11.0).
+3. Open **Tillkeeper** in the admin menu. Protection is on from the start: product deletion and final order statuses need approval.
 
 == Frequently Asked Questions ==
 
-= Does this let an AI agent change my store? =
+= Does an agent need to know about Tillkeeper? =
 
-No. Every ability this plugin registers is read-only. It does not modify products, orders, or any other store data.
+No. Tillkeeper wraps WooCommerce's own `product-delete` and `order-update-status` abilities. Any agent calling those standard abilities is protected automatically.
 
-= Does this send my store data anywhere? =
+= Can an agent approve its own request? =
 
-No. Tillkeeper itself makes no external requests. It only exposes read access to whatever already has permission to call WordPress abilities on your own site.
+No. Approving happens only on the Tillkeeper page in wp-admin, by a logged-in user who can manage WooCommerce. The agent never receives anything it could use to approve.
+
+= Who can see customer data through the customer abilities? =
+
+Only users with the `list_users` capability (administrators and, by default, shop managers). An agent acting as a user without it gets a permission error. The activity log records the customer ID only.
+
+= Does Tillkeeper slow my store down? =
+
+No. It does nothing on the storefront. It only runs when an ability is called, and adds one small database write per call.
+
+= What is not protected? =
+
+Tillkeeper guards the abilities WooCommerce registers for deleting products and changing order status. Product edits (prices, stock) are logged; guarding them with limits and previews is part of Tillkeeper Pro. Abilities registered by other plugins are not touched.
+
+== Screenshots ==
+
+1. Requests waiting for approval, with Approve and Reject.
+2. Protection settings and the list of store abilities agents can use.
+3. The agent activity log.
 
 == Changelog ==
 
 = 1.0.0 =
 * First public release.
-* Read-only abilities: `list-products`/`get-product`, `list-orders`/`get-order`, `list-customers`/`get-customer`.
-* PII-free audit log (IDs only) and an admin page listing registered abilities and recent activity.
+* Approval queue for `woocommerce/product-delete` and `woocommerce/order-update-status` (final statuses by default).
+* Activity log of every WooCommerce ability call, IDs only.
+* Overview of store abilities and their protection.
+* Read abilities for customers: `tillkeeper/list-customers`, `tillkeeper/get-customer`.

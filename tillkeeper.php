@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Tillkeeper
  * Plugin URI:        https://cognitolab.net/products/tillkeeper
- * Description:       A trust layer between AI agents and your WooCommerce store: safe, audited read access via the WordPress Abilities API.
+ * Description:       Keeps AI agents honest in your WooCommerce store: every agent action is logged, and deleting products or finalising orders waits for a person to approve it.
  * Version:           1.0.0
  * Requires at least: 6.9
  * Requires PHP:      7.4
@@ -14,10 +14,7 @@
  * Domain Path:       /languages
  * Requires Plugins:  woocommerce
  *
- * "Tillkeeper" is a working name and may still change before the first
- * public release - every internal identifier lives behind the TLKP_/tlkp_
- * prefix below so a rename stays a mechanical find/replace instead of an
- * architecture change.
+ * Internal identifiers use the TLKP_/tlkp_ prefix.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -30,17 +27,17 @@ define( 'TLKP_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TLKP_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 /**
- * Namespace prefix used for every ability name and the ability category
- * (`{namespace}/{ability-slug}`, e.g. `tillkeeper/list-products`), per the
- * Abilities API's namespaced-slug requirement. Centralized here so the
- * working-name rename above only has to happen once.
+ * Namespace for this plugin's own abilities and their category
+ * (`tillkeeper/list-customers`), as the Abilities API requires.
  */
 define( 'TLKP_ABILITY_NAMESPACE', 'tillkeeper' );
 
-require_once TLKP_PLUGIN_DIR . 'includes/audit-log.php';
+require_once TLKP_PLUGIN_DIR . 'includes/settings.php';
+require_once TLKP_PLUGIN_DIR . 'includes/activity-log.php';
+require_once TLKP_PLUGIN_DIR . 'includes/approval-queue.php';
+require_once TLKP_PLUGIN_DIR . 'includes/guard.php';
+require_once TLKP_PLUGIN_DIR . 'includes/observe.php';
 require_once TLKP_PLUGIN_DIR . 'includes/ability-category.php';
-require_once TLKP_PLUGIN_DIR . 'includes/abilities/read-products.php';
-require_once TLKP_PLUGIN_DIR . 'includes/abilities/read-orders.php';
 require_once TLKP_PLUGIN_DIR . 'includes/abilities/read-customers.php';
 require_once TLKP_PLUGIN_DIR . 'includes/admin-page.php';
 

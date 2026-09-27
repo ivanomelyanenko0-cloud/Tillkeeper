@@ -15,7 +15,7 @@ function tlkp_register_ability_category() {
 		TLKP_ABILITY_NAMESPACE,
 		array(
 			'label'       => __( 'Tillkeeper', 'tillkeeper' ),
-			'description' => __( 'Safe, audited read access to WooCommerce store data for AI agents.', 'tillkeeper' ),
+			'description' => __( 'Customer lookups for AI agents, with every call logged by Tillkeeper.', 'tillkeeper' ),
 		)
 	);
 }

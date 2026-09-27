@@ -1,0 +1,38 @@
+.tlkp-wrap h2 {
+	margin-top: 2em;
+}
+
+.tlkp-decision form {
+	display: flex;
+	gap: 6px;
+}
+
+.tlkp-resolved {
+	margin-top: 10px;
+}
+
+.tlkp-resolved summary {
+	cursor: pointer;
+	color: #2271b1;
+}
+
+.tlkp-protection-guarded { color: #007017; font-weight: 600; }
+.tlkp-protection-open { color: #b32d2e; font-weight: 600; }
+.tlkp-protection-logged { color: #50575e; }
+
+.tlkp-log-tools .current {
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.tlkp-kind-write td:nth-child(2) code {
+	background: #fcf0e3;
+}
+
+.tlkp-clear {
+	margin-top: 12px;
+}
+
+.tlkp-wrap td code {
+	white-space: nowrap;
+}
