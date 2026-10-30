@@ -62,8 +62,8 @@ Tillkeeper guards the abilities WooCommerce registers for deleting products and 
 
 == Screenshots ==
 
-1. Requests waiting for approval, with Approve and Reject.
-2. Protection settings and the list of store abilities agents can use.
+1. Requests waiting for approval, with Approve and Reject, and the protection settings.
+2. Store abilities agents can use and how each one is protected.
 3. The agent activity log.
 
 == Changelog ==
