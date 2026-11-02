@@ -1,6 +1,6 @@
 === Tillkeeper ===
 Contributors: lukystile
-Tags: ai, mcp, abilities api, woocommerce, security
+Tags: mcp, ai agent, woocommerce, abilities api, security
 Requires at least: 6.9
 Tested up to: 7.1
 Stable tag: 1.0.0
@@ -8,13 +8,13 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Keeps AI agents in check in your WooCommerce store: every agent action is logged, and deleting products or finalising orders waits for your approval.
+AI agent and MCP security for WooCommerce: log every agent action, and approve before agents delete products or finalise orders.
 
 == Description ==
 
 AI agents such as ChatGPT, Claude or your own bots can now work with a WooCommerce store directly, through the WordPress Abilities API and MCP. WooCommerce itself registers abilities that let an agent **delete products** and **change order statuses** - and they run immediately, with no confirmation.
 
-Tillkeeper sits between the agent and your store:
+**Tillkeeper** is an AI agent guard for WooCommerce. It sits between the agent and your store:
 
 * **Approval for dangerous actions.** When an agent tries to delete a product or move an order to Completed, Cancelled or Refunded, nothing happens. The request waits on the Tillkeeper page until a store manager clicks Approve or Reject. The agent gets "pending approval" back and has no way to approve it itself - so even a confused or manipulated agent cannot do damage on its own.
 * **A log of everything agents do.** Every call to a WooCommerce ability - reads and changes - is recorded: which ability, which product or order, which user, and what happened. The log stores IDs only, never customer names, emails or addresses.
@@ -39,6 +39,10 @@ This plugin does not connect to any external service. No data leaves your site. 
 3. Open **Tillkeeper** in the admin menu. Protection is on from the start: product deletion and final order statuses need approval.
 
 == Frequently Asked Questions ==
+
+= Is it safe to connect ChatGPT or Claude to my WooCommerce store through MCP? =
+
+Only with guardrails. WooCommerce's own abilities let a connected agent delete products and change order statuses at once, with no confirmation. With Tillkeeper active, those actions wait for a store manager's approval, and every agent call to a WooCommerce ability is logged.
 
 = Does an agent need to know about Tillkeeper? =
 
