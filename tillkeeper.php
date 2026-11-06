@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Tillkeeper
+ * Plugin Name:       Tillkeeper – AI Agent Approvals & MCP Security for WooCommerce
  * Plugin URI:        https://cognitolab.net/products/tillkeeper
  * Description:       Keeps AI agents honest in your WooCommerce store: every agent action is logged, and deleting products or finalising orders waits for a person to approve it.
  * Version:           1.0.0

@@ -1,4 +1,4 @@
-=== Tillkeeper ===
+=== Tillkeeper – AI Agent Approvals & MCP Security for WooCommerce ===
 Contributors: lukystile
 Tags: mcp, ai agent, woocommerce, abilities api, security
 Requires at least: 6.9
